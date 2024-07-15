@@ -110,9 +110,9 @@ The API uses structured error handling to return informative error responses. Er
 
 ## Setup
 
-1. **Clone the repository**: `git clone https://github.com/your-repo/swiftapi.git`
+1. **Clone the repository**: `git clone https://github.com/lifecycles1/SwiftAPI.git`
 2. **Navigate to the project directory**: `cd swiftapi`
 3. **Build the project**: `dotnet build`
 4. **Run the project**: `dotnet run`
-5. **Access the API documentation**: `https://localhost:7066/swagger/index.html`
+5. **Access the API documentation**: `http://localhost:5132/swagger/index.html`
 6. **Test the API endpoints using Swagger or a REST client like Postman**.

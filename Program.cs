@@ -48,24 +48,16 @@ var app = builder.Build();
 var initializer = new DatabaseInitializer(app.Services.GetRequiredService<DatabaseConnectionFactory>());
 await initializer.InitializeAsync();
 
+app.UseExceptionHandler("/error");
+app.UseHsts();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Enable Swagger in all environments
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    _ = app.UseDeveloperExceptionPage();
-
-    _ = app.UseSwagger();
-    _ = app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwiftAPI v1");
-        c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
-    });
-}
-else
-{
-    _ = app.UseExceptionHandler("/error");
-    _ = app.UseHsts();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "SwiftAPI v1");
+    c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+});
 
 app.UseHttpsRedirection();
 
