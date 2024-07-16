@@ -17,27 +17,15 @@ namespace SwiftAPI.Repositories
             _connectionFactory = connectionFactory;
         }
 
-        public async Task<(SwiftMessage?, MT799?)> AddMT799(SwiftMessage? swiftMessage, MT799? mt799)
+        public async Task<(SwiftMessage, MT799)> AddMT799(SwiftMessage swiftMessage, MT799 mt799)
         {
-            if (swiftMessage == null)
-            {
-                _logger.LogError("Cannot insert MT799: SwiftMessage is null.");
-                throw new ArgumentNullException(nameof(swiftMessage), "SwiftMessage cannot be null.");
-            }
-
-            if (mt799 == null)
-            {
-                _logger.LogError("Cannot insert MT799: MT799 is null.");
-                throw new ArgumentNullException(nameof(mt799), "MT799 cannot be null.");
-            }
-
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
             var sqlSwiftMessage = @"
                 INSERT INTO SwiftMessages (BasicHeader, ApplicationHeader, UserHeader, TextBlock, Trailer) 
                 VALUES (@BasicHeader, @ApplicationHeader, @UserHeader, @TextBlock, @Trailer);
-                SELECT Id, BasicHeader, ApplicationHeader, UserHeader, TextBlock, Trailer, CreatedAt
+                SELECT Id, CreatedAt
                 FROM SwiftMessages
                 WHERE Id = last_insert_rowid();";
 
@@ -52,6 +40,7 @@ namespace SwiftAPI.Repositories
 
             try
             {
+                _logger.LogInformation("Repository Inserting Swift MT799 message.");
                 // Insert into SwiftMessages
                 await using (var command = connection.CreateCommand())
                 {
@@ -122,7 +111,7 @@ namespace SwiftAPI.Repositories
             }
         }
 
-        public async Task<(SwiftMessage?, MT799?)> GetMT799(int id)
+        public async Task<(SwiftMessage, MT799)> GetMT799(int id)
         {
             await using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
@@ -130,8 +119,8 @@ namespace SwiftAPI.Repositories
             const string sqlMT799 = "SELECT * FROM MT799 WHERE Id = @Id;";
             const string sqlSwiftMessage = "SELECT * FROM SwiftMessages WHERE Id = @Id;";
 
-            MT799? mt799;
-            SwiftMessage? swiftMessage;
+            MT799 mt799;
+            SwiftMessage swiftMessage;
 
             try
             {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SwiftAPI.Interfaces;
-using SwiftAPI.Models;
+using SwiftAPI.Responses;
 
 namespace SwiftAPI.Controllers
 {
@@ -55,12 +55,6 @@ namespace SwiftAPI.Controllers
                 // Run the service method
                 var swiftMessageResponse = await _messageService.AddMT799(message);
 
-                if (swiftMessageResponse == null)
-                {
-                    _logger.LogError("Failed to add MT799 message: Service returned null.");
-                    return BadRequest("Failed to add MT799 message: Service returned null.");
-                }
-
                 return CreatedAtAction(nameof(GetMT799), new { id = swiftMessageResponse.MTMessage.Id }, swiftMessageResponse);
             }
             catch (Exception ex)
@@ -77,23 +71,16 @@ namespace SwiftAPI.Controllers
             {
                 var response = await _messageService.GetMT799(id);
 
-                if (response == null)
-                {
-                    _logger.LogWarning("MT799 record not found with ID: {MessageId}", id);
-                    // Return 404 Not Found if no data is found
-                    return NotFound(new { Message = "MT799 record not found." });
-                }
-
                 _logger.LogInformation("MT799 record found with ID: {MessageId}", id);
                 // Return 200 OK with the data
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to retrieve MT799 message with ID: {MessageId}", id);
-                return BadRequest("Failed to retrieve MT799 message.");
+                _logger.LogWarning(ex, "MT799 record not found with ID: {MessageId}", id);
+                // Return 404 Not Found if no data is found
+                return NotFound(new { Message = "MT799 record not found." });
             }
-            
         }
     }
 }

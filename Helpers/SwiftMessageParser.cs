@@ -12,6 +12,53 @@ namespace SwiftAPI.Helpers
             _logger = logger;
         }
 
+        public (SwiftMessage, MT799) ParseMT799(string message)
+        {
+            SwiftMessage swiftMessage;
+
+            try
+            {
+                swiftMessage = BlockParser(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to parse MT799 message: Block parsing failed.");
+                throw;
+            }
+
+            if (swiftMessage.TextBlock != null)
+            {
+                var textBlock = swiftMessage.TextBlock;
+                var field20 = ExtractField(textBlock, ":20:", "\r\n");
+                if (field20 == null)
+                {
+                    _logger.LogError("Invalid MT799 message: Mandatory Field 20 is missing.");
+                    throw new Exception("Invalid MT799 message: Mandatory Field 20 is missing.");
+                }
+                var field21 = ExtractField(textBlock, ":21:", "\r\n");
+                var field79List = Extract79Fields(textBlock);
+                if (field79List.Count == 0)
+                {
+                    _logger.LogError("Invalid MT799 message: Mandatory Field 79 is missing.");
+                    throw new Exception("Invalid MT799 message: Mandatory Field 79 is missing.");
+                }
+
+                var field79 = string.Join("||", field79List);
+
+                return (swiftMessage, new MT799
+                {
+                    Field20 = field20,
+                    Field21 = field21,
+                    Field79 = field79
+                });
+            }
+            else
+            {
+                _logger.LogError("Failed to parse MT799 message: TextBlock is missing.");
+                throw new Exception("Failed to parse MT799 message: TextBlock is missing.");
+            }
+        }
+
         private SwiftMessage BlockParser(string message)
         {
             string? block1 = ExtractField(message, "{1:", "}");
@@ -80,53 +127,6 @@ namespace SwiftAPI.Helpers
                 start = end;
             }
             return fields;
-        }
-
-        public (SwiftMessage?, MT799?) ParseMT799(string message)
-        {
-            SwiftMessage swiftMessage;
-
-            try
-            {
-               swiftMessage = BlockParser(message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to parse MT799 message: Block parsing failed.");
-                throw;
-            }
-
-            if (swiftMessage.TextBlock != null)
-            {
-                var textBlock = swiftMessage.TextBlock;
-                var field20 = ExtractField(textBlock, ":20:", "\r\n");
-                if (field20 == null)
-                {
-                    _logger.LogError("Invalid MT799 message: Mandatory Field 20 is missing.");
-                    throw new Exception("Invalid MT799 message: Mandatory Field 20 is missing.");
-                }
-                var field21 = ExtractField(textBlock, ":21:", "\r\n");
-                var field79List = Extract79Fields(textBlock);
-                if (field79List.Count == 0)
-                {
-                    _logger.LogError("Invalid MT799 message: Mandatory Field 79 is missing.");
-                    throw new Exception("Invalid MT799 message: Mandatory Field 79 is missing.");
-                }
-
-                var field79 = string.Join("||", field79List);
-
-                return (swiftMessage, new MT799
-                {
-                    Field20 = field20,
-                    Field21 = field21,
-                    Field79 = field79
-                });
-            }
-            else
-            {
-                _logger.LogError("Failed to parse MT799 message: TextBlock is missing.");
-                throw new Exception("Failed to parse MT799 message: TextBlock is missing.");
-            }
         }
     }
 }

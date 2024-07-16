@@ -21,53 +21,22 @@ namespace SwiftAPI.Services
             _repository = repository;
         }
 
-        public async Task<SwiftMessageResponse<MT799>?> AddMT799(string message)
+        public async Task<SwiftMessageResponse<MT799>> AddMT799(string message)
         {
-            // parse the message
-            var (swiftMessage, mt799) = _parser.ParseMT799(message);
-
-            if (swiftMessage == null) {
-                _logger.LogError("Failed to parse the SWIFT message.");
-                return null;
-            }
-
-            if (mt799 == null)
-            {
-                _logger.LogError("Failed to parse the MT799 message.");
-                return null;
-            }
-
             try
             {
+                // parse the message
+                var (swiftMessage, mt799) = _parser.ParseMT799(message);
+
+                // partially validate the mt799 specific fields
                 _validator.ValidateMT799(mt799);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "MT799 validation failed.");
-                // Validation failed, so do not call repository method. Return null instead.
-                return null;
-            }
 
-            // If mt799 is successfully validated, call repository method
-            try
-            {
+                // insert the message into the database
                 var (insertedSwiftMessage, insertedMT799) = await _repository.AddMT799(swiftMessage, mt799);
-
-                if (insertedSwiftMessage == null)
-                {
-                    _logger.LogError("Failed to insert SWIFT message: Repository returned null.");
-                    return null;
-                }
-
-                if (insertedMT799 == null)
-                {
-                    _logger.LogError("Failed to insert MT799 message: Repository returned null.");
-                    return null;
-                }
 
                 _logger.LogInformation("Logging the inserted MT799's ID: {insertedMT799.Id}, SwiftMessageId: {insertedMT799.SwiftMessageId}", insertedMT799.Id, insertedMT799.SwiftMessageId);
 
-                var response = new SwiftMessageResponse<MT799>
+                return new SwiftMessageResponse<MT799>
                 {
                     Id = insertedSwiftMessage.Id,
                     BasicHeader = insertedSwiftMessage.BasicHeader,
@@ -77,10 +46,6 @@ namespace SwiftAPI.Services
                     Trailer = insertedSwiftMessage.Trailer,
                     CreatedAt = insertedSwiftMessage.CreatedAt
                 };
-
-                _logger.LogInformation("Returning ADD response with ID: {Id}, MTMessage.Id: {MTMessage.Id}, MTMessage.SwiftMessageId: {MTMessage.SwiftMessageId}", response.Id, response.MTMessage.Id, response.MTMessage.SwiftMessageId);
-
-                return response;
             }
             catch (Exception ex)
             {
@@ -89,19 +54,13 @@ namespace SwiftAPI.Services
             }
         }
 
-        public async Task<SwiftMessageResponse<MT799>?> GetMT799(int id)
+        public async Task<SwiftMessageResponse<MT799>> GetMT799(int id)
         {
             _logger.LogInformation("Fetching MT799 message with ID: {id}", id);
 
             try
             {
                 var (swiftMessage, mt799) = await _repository.GetMT799(id);
-
-                if (swiftMessage == null || mt799 == null)
-                {
-                    _logger.LogError("Failed to retrieve SWIFT message with ID: {id} from repository.", id);
-                    return null;
-                }
 
                 var response = new SwiftMessageResponse<MT799>
                 {
