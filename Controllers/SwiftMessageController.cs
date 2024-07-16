@@ -41,7 +41,7 @@ namespace SwiftAPI.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to add MT799 message.");
-                return BadRequest("Failed to add MT799 message.");
+                return StatusCode(500, new { Message = "An unexpected error occurred." });
             }
         }
 
@@ -58,9 +58,16 @@ namespace SwiftAPI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "MT799 record not found with ID: {MessageId}", id);
-                // Return 404 Not Found if no data is found
-                return NotFound(new { Message = "MT799 record not found." });
+                if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning(ex, "MT799 record not found with ID: {MessageId}", id);
+                    // Return 404 Not Found if no data is found
+                    return NotFound(new { Message = "MT799 record not found." });
+                }
+
+                // Log unexpected errors and return 500 Internal Server Error
+                _logger.LogError(ex, "An unexpected error occurred while retrieving MT799 record with ID: {MessageId}", id);
+                return StatusCode(500, new { Message = "An unexpected error occurred." });
             }
         }
     }

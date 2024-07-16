@@ -33,14 +33,14 @@ namespace SwiftAPI.Helpers
                 if (field20 == null)
                 {
                     _logger.LogError("Invalid MT799 message: Mandatory Field 20 is missing.");
-                    throw new Exception("Invalid MT799 message: Mandatory Field 20 is missing.");
+                    throw new ArgumentException("Invalid MT799 message: Mandatory Field 20 is missing.");
                 }
                 var field21 = ExtractField(textBlock, ":21:", "\r\n");
                 var field79List = Extract79Fields(textBlock);
                 if (field79List.Count == 0)
                 {
                     _logger.LogError("Invalid MT799 message: Mandatory Field 79 is missing.");
-                    throw new Exception("Invalid MT799 message: Mandatory Field 79 is missing.");
+                    throw new ArgumentException("Invalid MT799 message: Mandatory Field 79 is missing.");
                 }
 
                 var field79 = string.Join("||", field79List);
@@ -55,7 +55,7 @@ namespace SwiftAPI.Helpers
             else
             {
                 _logger.LogError("Failed to parse MT799 message: TextBlock is missing.");
-                throw new Exception("Failed to parse MT799 message: TextBlock is missing.");
+                throw new ArgumentException("Failed to parse MT799 message: TextBlock is missing.");
             }
         }
 
@@ -65,7 +65,7 @@ namespace SwiftAPI.Helpers
             if (block1 == null)
             {
                 _logger.LogError("Invalid SWIFT message: Mandatory Block 1 (BasicHeader) is missing.");
-                throw new Exception("Invalid SWIFT message: Mandatory Block 1 (BasicHeader) is missing.");
+                throw new ArgumentException("Invalid SWIFT message: Mandatory Block 1 (BasicHeader) is missing.");
             }
             string? block2 = ExtractField(message, "{2:", "}");
             string? block3 = ExtractField(message, "{3:", "}}");
