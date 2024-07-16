@@ -33,6 +33,7 @@ if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddSingleton(new DatabaseConnectionFactory(connectionString));
 
 // Register helpers
+builder.Services.AddScoped<ISwiftFileParser, SwiftFileParser>();
 builder.Services.AddScoped<ISwiftMessageParser, SwiftMessageParser>();
 builder.Services.AddScoped<ISwiftMessageValidator, SwiftMessageValidator>();
 
