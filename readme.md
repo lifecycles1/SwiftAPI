@@ -114,5 +114,5 @@ The API uses structured error handling to return informative error responses. Er
 2. **Navigate to the project directory**: `cd swiftapi`
 3. **Build the project**: `dotnet build`
 4. **Run the project**: `dotnet run`
-5. **Access the API documentation**: `http://localhost:5132/index.html`
+5. **Access the API documentation**: `http://localhost:5132/swagger/index.html`
 6. **Test the API endpoints using Swagger or a REST client like Postman**.
