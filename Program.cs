@@ -60,7 +60,15 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
 });
 
-app.UseHttpsRedirection();
+app.Use(async (context, next) =>
+{
+    await next();
+    if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
+    {
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsync("{\"message\":\"Endpoint not found. Please check the URL and try again.\"}");
+    }
+});
 
 app.UseRouting();
 
