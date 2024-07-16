@@ -12,6 +12,13 @@ namespace SwiftAPI.Helpers
             _logger = logger;
         }
 
+        private static readonly Dictionary<string, HashSet<char>> CharacterSets = new Dictionary<string, HashSet<char>>
+        {
+            { "x", new HashSet<char>("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/-?:().,'+ \r\n".ToCharArray()) },
+            // { "y", new HashSet<char>("...".ToCharArray()) },
+            // { "z", new HashSet<char>("...".ToCharArray()) },
+        };
+
         // TO-DO: Implement Validate blocks of Swift Message
 
         public void ValidateMT799(MT799 mt799)
@@ -42,6 +49,7 @@ namespace SwiftAPI.Helpers
                 _logger.LogError("Field 20 cannot start or end with a slash, or contain double slashes.");
                 throw new Exception("Field 20 cannot start or end with a slash, or contain double slashes.");
             }
+            ValidateCharacterSet(field20, "x", "20");
         }
 
         private void ValidateField21(string field21)
@@ -56,6 +64,7 @@ namespace SwiftAPI.Helpers
                 _logger.LogError("Field 21 cannot start or end with a slash, or contain double slashes.");
                 throw new Exception("Field 21 cannot start or end with a slash, or contain double slashes.");
             }
+            ValidateCharacterSet(field21, "x", "21");
         }
 
         private void ValidateField79(string field79)
@@ -79,7 +88,27 @@ namespace SwiftAPI.Helpers
                     _logger.LogError("Field 79 exceeds the maximum length of 50 characters per line.");
                     throw new Exception("Field 79 exceeds the maximum length of 50 characters per line.");
                 }
+                ValidateCharacterSet(field, "x", "79");
             }
+        }
+
+        private void ValidateCharacterSet(string field, string characterSetKey, string fieldName = "")
+        {
+          if (!CharacterSets.TryGetValue(characterSetKey, out var characterSet))
+          {
+              _logger.LogError("Invalid character set type: {CharacterSetKey} for field {FieldName}.", characterSetKey, fieldName);
+              throw new Exception($"Invalid character set type: {characterSetKey} for field {fieldName}.");
+          }
+
+          for (int position = 0; position < field.Length; position++)
+          {
+              char c = field[position];
+              if (!characterSet.Contains(c))
+              {
+                  _logger.LogError("Invalid character '{c}' at position {Position} in field {FieldName}.", c, position, fieldName);
+                  throw new Exception($"Invalid character '{c}' at position {position} in field {fieldName}.");
+              }
+          }
         }
     }
 }

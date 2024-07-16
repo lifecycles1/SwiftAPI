@@ -60,6 +60,8 @@ app.UseSwaggerUI(c =>
     c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
 });
 
+app.UseHttpsRedirection();
+
 app.UseRouting();
 
 app.MapControllers();
